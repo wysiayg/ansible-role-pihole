@@ -1,0 +1,50 @@
+---
+- name: Create container instances
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Create container network
+      containers.podman.podman_network:
+        name: molecule-pihole-test
+        state: present
+
+    - name: Create test containers
+      containers.podman.podman_container:
+        name: "{{ item }}"
+        hostname: "{{ item }}"
+        image: "{{ hostvars[item].container_image }}"
+        privileged: "{{ hostvars[item]['container_privileged'] | default(false) }}"
+        command: "{{ hostvars[item]['container_command'] | default('sleep 1d') }}"
+        state: started
+        volumes: "{{ hostvars[item]['container_volumes'] | default(omit) }}"
+        capabilities: "{{ hostvars[item]['container_capabilities'] | default(omit) }}"
+        systemd: "{{ hostvars[item]['container_systemd'] | default(false) }}"
+        log_driver: "{{ hostvars[item]['container_log_driver'] | default('json-file') }}"
+        network:
+          - molecule-pihole-test
+      register: container_start_result
+      loop: "{{ groups['molecule'] }}"
+
+    - name: Verify containers are running
+      ansible.builtin.include_tasks:
+        file: tasks/container-create-fail.yml
+      when: >
+        item.container.State.ExitCode != 0 or
+        not item.container.State.Running
+      loop: "{{ container_start_result.results }}"
+      loop_control:
+        label: "{{ item.container.Name }}"
+
+    - name: Install python interpreter in container if necessary
+      ansible.builtin.raw: "{{ hostvars[item].python_install_command }}"
+      args:
+        executable: /bin/bash
+      delegate_to: "{{ item }}"
+      loop: "{{ groups['molecule'] }}"
+      when: hostvars[item].install_python | default(false)
+
+    - name: Wait for containers to be ready
+      ansible.builtin.wait_for_connection:
+        timeout: 30
+      delegate_to: "{{ item }}"
+      loop: "{{ groups['molecule'] }}"
