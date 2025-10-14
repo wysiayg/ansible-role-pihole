@@ -25,7 +25,7 @@
       register: container_start_result
       loop: "{{ groups['molecule'] }}"
 
-    - name: Verify containers are running
+    - name: Fail if containers are not running
       ansible.builtin.include_tasks:
         file: tasks/container-create-fail.yml
       when: >

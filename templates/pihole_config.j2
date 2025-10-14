@@ -1,0 +1,29 @@
+{%- for title, section in pihole_config.items() %}
+[{{title}}]
+{% for key, value in section.items() recursive %}
+{% set section_loop = loop %}
+{# List #}
+{%- if value is iterable and (value is not string and value is not mapping) -%}
+{{key}} = [
+{% for list_item in value %}
+  {%- if list_item is string %}
+  "{{list_item}}"
+  {%- else %}
+  {{list_item}}
+  {%- endif -%}
+  {{ ", " if not loop.last else "" }}
+{% endfor %}
+]
+{# String #}
+{%- elif value is string -%}
+{{key}} = "{{value}}"
+{# Number or Bool #}
+{%- elif value is number or value is boolean  -%}
+{{key}} = {{value}}
+{# Subsection #}
+{%- else %}
+[{{key}}]
+{{ loop(value.items()) }}
+{%- endif %}
+{%- endfor %}
+{%- endfor %}

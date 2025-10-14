@@ -4,6 +4,6 @@
   gather_facts: false
 
   tasks:
-    name: Apply PiHole role
-    ansible.builtin.include_role: 
-      name: "pihole"
+    - name: Apply PiHole role
+      ansible.builtin.include_role: 
+        name: "pihole"

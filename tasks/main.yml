@@ -1,3 +1,43 @@
 #SPDX-License-Identifier: MIT-0
 ---
 # tasks file for pihole
+
+- name: Create pihole group
+  ansible.builtin.group:
+    name: pihole
+    state: present
+
+- name: Create pihole user
+  ansible.builtin.user:
+    name: pihole
+    create_home: True
+    home: "/home/pihole"
+    shell: "/usr/sbin/nologin"
+    comment: "PiHole"
+    group: pihole
+    password: "*"
+    state: present
+    remove: true
+    system: True
+
+- name: Create pihole configuration directory
+  ansible.builtin.file:
+    state: directory
+    path: /etc/pihole
+    owner: pihole
+    group: pihole
+    mode: "755"
+
+- name: Write default pihole configuration
+  ansible.builtin.template:
+    src: pihole_config.j2
+    dest: /etc/pihole/pihole.toml
+    owner: pihole
+    group: pihole
+    mode: '0644'
+    force: True
+
+# - name: Install Pi-hole
+#   ansible.builtin.shell:
+#     cmd: curl -sSL https://install.pi-hole.net | bash /dev/stdin --unattended
+#     creates: /etc/systemd/system/pihole-FTL.service
