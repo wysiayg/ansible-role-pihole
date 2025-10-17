@@ -2,6 +2,12 @@
 ---
 # tasks file for pihole
 
+- name: Install required packages
+  ansible.builtin.package:
+    name:
+      - curl
+    state: present
+
 - name: Create pihole group
   ansible.builtin.group:
     name: pihole
@@ -35,9 +41,13 @@
     owner: pihole
     group: pihole
     mode: '0644'
-    force: True
+    force: False
 
-# - name: Install Pi-hole
-#   ansible.builtin.shell:
-#     cmd: curl -sSL https://install.pi-hole.net | bash /dev/stdin --unattended
-#     creates: /etc/systemd/system/pihole-FTL.service
+- name: Install Pi-hole
+  ansible.builtin.shell:
+    cmd: curl -sSL https://install.pi-hole.net | bash /dev/stdin --unattended
+    creates: /etc/systemd/system/pihole-FTL.service
+
+- name: Update gravity lists
+  ansible.builtin.shell:
+    cmd: pihole -g
