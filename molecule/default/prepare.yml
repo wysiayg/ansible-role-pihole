@@ -1,0 +1,10 @@
+---
+- name: Converge
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: Install systemd
+      ansible.builtin.package:
+        name: systemd
+        state: present
