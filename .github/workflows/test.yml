@@ -28,6 +28,6 @@ jobs:
           ls
       - name: Run the role
         run: |
-          ansible -i localhost --module-name include_role --args name=pihole
+          ansible localhost --module-name include_role --args name=pihole
     
       
