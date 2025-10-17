@@ -28,6 +28,6 @@ jobs:
           ls
       - name: Run the role
         run: |
-          ansible localhost --module-name include_role --args name=pihole
+          DEFAULT_ROLES_PATH=$PWD ansible localhost --module-name include_role --args name=pihole
     
       
